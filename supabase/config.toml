@@ -1,0 +1,10 @@
+project_id = "kvztylhawxkksgmmxwhy"
+
+[functions.cameras]
+verify_jwt = false
+
+[functions.event-detector]
+verify_jwt = false
+
+[functions.events]
+verify_jwt = false
