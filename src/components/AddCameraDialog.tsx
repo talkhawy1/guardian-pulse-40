@@ -18,7 +18,8 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
     name: '',
     location: '',
     rtsp_url: '',
-    hls_url: ''
+    hls_url: '',
+    mjpeg_url: ''
   });
   const { toast } = useToast();
 
@@ -38,7 +39,7 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
         title: "Camera added",
         description: `${formData.name} has been successfully added`,
       });
-      setFormData({ name: '', location: '', rtsp_url: '', hls_url: '' });
+      setFormData({ name: '', location: '', rtsp_url: '', hls_url: '', mjpeg_url: '' });
       setOpen(false);
       onCameraAdded();
     } catch (error) {
@@ -97,7 +98,16 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hls_url">HLS URL (اختياري - للبث في المتصفح)</Label>
+            <Label htmlFor="mjpeg_url">MJPEG URL (للبث المباشر)</Label>
+            <Input
+              id="mjpeg_url"
+              placeholder="http://localhost:8000/video_feed"
+              value={formData.mjpeg_url}
+              onChange={(e) => setFormData({ ...formData, mjpeg_url: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hls_url">HLS URL (اختياري)</Label>
             <Input
               id="hls_url"
               placeholder="http://server:8888/stream/index.m3u8"
