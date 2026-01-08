@@ -12,6 +12,7 @@ interface Camera {
   location: string;
   rtsp_url: string;
   hls_url?: string;
+  mjpeg_url?: string;
   status: 'online' | 'offline' | 'error';
   created_at: string;
 }
@@ -93,6 +94,7 @@ const CameraCard = ({ camera, onDelete }: CameraCardProps) => {
       <CardContent className="p-0">
         <VideoPlayer 
           hlsUrl={camera.hls_url}
+          mjpegUrl={camera.mjpeg_url}
           rtspUrl={camera.rtsp_url}
           isOnline={camera.status === 'online'}
         />
