@@ -17,7 +17,8 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
   const [formData, setFormData] = useState({
     name: '',
     location: '',
-    rtsp_url: ''
+    rtsp_url: '',
+    hls_url: ''
   });
   const { toast } = useToast();
 
@@ -37,8 +38,7 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
         title: "Camera added",
         description: `${formData.name} has been successfully added`,
       });
-
-      setFormData({ name: '', location: '', rtsp_url: '' });
+      setFormData({ name: '', location: '', rtsp_url: '', hls_url: '' });
       setOpen(false);
       onCameraAdded();
     } catch (error) {
@@ -94,6 +94,15 @@ const AddCameraDialog = ({ onCameraAdded }: AddCameraDialogProps) => {
               value={formData.rtsp_url}
               onChange={(e) => setFormData({ ...formData, rtsp_url: e.target.value })}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hls_url">HLS URL (اختياري - للبث في المتصفح)</Label>
+            <Input
+              id="hls_url"
+              placeholder="http://server:8888/stream/index.m3u8"
+              value={formData.hls_url}
+              onChange={(e) => setFormData({ ...formData, hls_url: e.target.value })}
             />
           </div>
           <div className="flex justify-end gap-2">

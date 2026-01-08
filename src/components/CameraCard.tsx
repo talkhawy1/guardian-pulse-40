@@ -1,15 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Video, VideoOff, Trash2 } from "lucide-react";
+import { Trash2, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import VideoPlayer from "./VideoPlayer";
 
 interface Camera {
   id: string;
   name: string;
   location: string;
   rtsp_url: string;
+  hls_url?: string;
   status: 'online' | 'offline' | 'error';
   created_at: string;
 }
@@ -25,7 +27,7 @@ const CameraCard = ({ camera, onDelete }: CameraCardProps) => {
   const handleDelete = async () => {
     try {
       const { error } = await supabase.functions.invoke('cameras', {
-        body: {},
+        body: { id: camera.id },
         method: 'DELETE',
       });
 
@@ -44,6 +46,19 @@ const CameraCard = ({ camera, onDelete }: CameraCardProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const copyRtspUrl = () => {
+    navigator.clipboard.writeText(camera.rtsp_url);
+    toast({
+      title: "تم النسخ",
+      description: "تم نسخ رابط RTSP",
+    });
+  };
+
+  const openInVlc = () => {
+    // VLC protocol handler
+    window.open(`vlc://${camera.rtsp_url}`, '_blank');
   };
 
   const statusColors = {
@@ -76,23 +91,30 @@ const CameraCard = ({ camera, onDelete }: CameraCardProps) => {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Video placeholder - In real app, this would show HLS stream */}
-        <div className="aspect-video bg-secondary/20 flex items-center justify-center relative group">
-          {camera.status === 'online' ? (
-            <>
-              <Video className="w-16 h-16 text-muted-foreground" />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <p className="text-primary-foreground text-sm">Stream: {camera.rtsp_url}</p>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <VideoOff className="w-16 h-16 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Camera {statusLabels[camera.status]}</p>
-            </div>
-          )}
-        </div>
-        <div className="p-4 flex justify-end">
+        <VideoPlayer 
+          hlsUrl={camera.hls_url}
+          rtspUrl={camera.rtsp_url}
+          isOnline={camera.status === 'online'}
+        />
+        <div className="p-4 flex items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyRtspUrl}
+              title="نسخ رابط RTSP"
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openInVlc}
+              title="فتح في VLC"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          </div>
           <Button
             variant="destructive"
             size="sm"
