@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
@@ -8,15 +8,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { Flame, Users, ShieldAlert, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const LOCAL_BACKEND_URL = "http://localhost:8000";
+
+interface LocalEvent {
+  id: string;
+  event_type: string;
+  timestamp: string;
+  confidence?: number;
+}
+
 const Dashboard = () => {
   const [cameras, setCameras] = useState([]);
   const [recentAlerts, setRecentAlerts] = useState([]);
-  const [stats, setStats] = useState({ fire: 0, fight: 0, intrusion: 0, total: 0 });
+  const [stats, setStats] = useState({ fire: 0, violence: 0, intrusion: 0, total: 0 });
   const { toast } = useToast();
+  
+  // Track seen event IDs to detect new events
+  const seenEventIds = useRef<Set<string>>(new Set());
 
-  const fetchData = async () => {
+  const fetchCameras = async () => {
     try {
-      // Fetch cameras
       const { data: camerasData, error: camerasError } = await supabase
         .from('cameras')
         .select('*')
@@ -24,73 +35,89 @@ const Dashboard = () => {
 
       if (camerasError) throw camerasError;
       setCameras(camerasData || []);
+    } catch (error) {
+      console.error('Error fetching cameras:', error);
+    }
+  };
 
-      // Fetch recent events
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          cameras (
-            id,
-            name,
-            location
-          )
-        `)
-        .order('timestamp', { ascending: false })
-        .limit(5);
-
-      if (eventsError) throw eventsError;
-      setRecentAlerts(eventsData || []);
-
-      // Calculate stats
-      const fireCount = eventsData?.filter(e => e.event_type === 'fire').length || 0;
-      const fightCount = eventsData?.filter(e => e.event_type === 'fight').length || 0;
-      const intrusionCount = eventsData?.filter(e => e.event_type === 'intrusion').length || 0;
+  // Poll local backend for events
+  const pollLocalEvents = async () => {
+    try {
+      const response = await fetch(`${LOCAL_BACKEND_URL}/api/events`);
+      if (!response.ok) throw new Error('Failed to fetch events');
+      
+      const events: LocalEvent[] = await response.json();
+      
+      // Calculate stats from local events
+      const fireCount = events.filter(e => e.event_type === 'fire').length;
+      const violenceCount = events.filter(e => e.event_type === 'violence').length;
+      const intrusionCount = events.filter(e => e.event_type === 'intrusion').length;
 
       setStats({
         fire: fireCount,
-        fight: fightCount,
+        violence: violenceCount,
         intrusion: intrusionCount,
-        total: eventsData?.length || 0
+        total: events.length
       });
+
+      // Detect NEW events and show toasts
+      events.forEach((event) => {
+        if (!seenEventIds.current.has(event.id)) {
+          seenEventIds.current.add(event.id);
+          
+          // Show toast for new fire events
+          if (event.event_type === 'fire') {
+            toast({
+              title: "🔥 Fire Detected!",
+              description: "Sending automated email to Fire Dept (998)...",
+              variant: "destructive",
+              duration: 8000,
+            });
+          }
+          
+          // Show toast for new violence events
+          if (event.event_type === 'violence') {
+            toast({
+              title: "⚠️ Violence Detected!",
+              description: "Notifying Security Team...",
+              className: "bg-yellow-500 text-yellow-950 border-yellow-600",
+              duration: 8000,
+            });
+          }
+        }
+      });
+
+      // Update recent alerts display (latest 5)
+      const sortedEvents = [...events].sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ).slice(0, 5);
+      
+      setRecentAlerts(sortedEvents.map(e => ({
+        id: e.id,
+        event_type: e.event_type,
+        timestamp: e.timestamp,
+        confidence: e.confidence || 0.95,
+        severity_level: e.event_type === 'fire' ? 'critical' : 'high',
+        cameras: { name: 'Local Camera', location: 'Main Entrance' }
+      })));
+
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error polling local backend:', error);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    // Fetch cameras from Supabase (still needed for camera display)
+    fetchCameras();
 
-    // Subscribe to realtime events
-    const channel = supabase
-      .channel('events-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'events'
-        },
-        (payload) => {
-          console.log('New event detected:', payload);
-          
-          // Play alert sound
-          const audio = new Audio('/alert.mp3');
-          audio.play().catch(err => console.log('Audio play failed:', err));
+    // Initial poll
+    pollLocalEvents();
 
-          toast({
-            title: `${payload.new.event_type.toUpperCase()} Detected!`,
-            description: `Severity: ${payload.new.severity_level}`,
-            variant: payload.new.severity_level === 'critical' ? 'destructive' : 'default',
-          });
-
-          fetchData();
-        }
-      )
-      .subscribe();
+    // Poll every 2 seconds
+    const pollInterval = setInterval(pollLocalEvents, 2000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -126,12 +153,12 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Fight Events</CardTitle>
-              <Users className="w-5 h-5 text-red-500" />
+              <CardTitle className="text-sm font-medium">Violence Events</CardTitle>
+              <Users className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.fight}</div>
-              <p className="text-xs text-muted-foreground">Fight detections</p>
+              <div className="text-2xl font-bold">{stats.violence}</div>
+              <p className="text-xs text-muted-foreground">Violence detections</p>
             </CardContent>
           </Card>
 
@@ -162,7 +189,7 @@ const Dashboard = () => {
                 <CameraCard
                   key={camera.id}
                   camera={camera}
-                  onDelete={fetchData}
+                  onDelete={fetchCameras}
                 />
               ))}
             </div>
@@ -183,7 +210,7 @@ const Dashboard = () => {
             </div>
             {recentAlerts.length === 0 && (
               <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No recent alerts</p>
+                <p className="text-muted-foreground">No recent alerts from local backend</p>
               </Card>
             )}
           </div>
