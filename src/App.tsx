@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
 import Cameras from "./pages/Cameras";
+import SetupGuide from "./pages/SetupGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/events" element={<Events />} />
           <Route path="/cameras" element={<Cameras />} />
+          <Route path="/setup" element={<SetupGuide />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
