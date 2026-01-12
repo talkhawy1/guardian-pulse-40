@@ -19,6 +19,7 @@ export type Database = {
           created_at: string | null
           id: string
           location: string
+          mjpeg_url: string | null
           name: string
           rtsp_url: string
           status: string
@@ -27,6 +28,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           location: string
+          mjpeg_url?: string | null
           name: string
           rtsp_url: string
           status?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           location?: string
+          mjpeg_url?: string | null
           name?: string
           rtsp_url?: string
           status?: string
