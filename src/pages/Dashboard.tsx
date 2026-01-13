@@ -5,7 +5,7 @@ import Navigation from "@/components/Navigation";
 import AlertCard from "@/components/AlertCard";
 import CameraCard from "@/components/CameraCard";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Users, ShieldAlert, Video } from "lucide-react";
+import { Flame, Users, Eye, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const LOCAL_BACKEND_URL = "http://localhost:8000";
@@ -20,7 +20,7 @@ interface LocalEvent {
 const Dashboard = () => {
   const [cameras, setCameras] = useState([]);
   const [recentAlerts, setRecentAlerts] = useState([]);
-  const [stats, setStats] = useState({ fire: 0, violence: 0, intrusion: 0, total: 0 });
+  const [stats, setStats] = useState({ fire: 0, violence: 0, suspicious: 0, total: 0 });
   const { toast } = useToast();
   
   // Track seen event IDs to detect new events
@@ -51,12 +51,12 @@ const Dashboard = () => {
       // Calculate stats from local events
       const fireCount = events.filter(e => e.event_type === 'fire').length;
       const violenceCount = events.filter(e => e.event_type === 'violence').length;
-      const intrusionCount = events.filter(e => e.event_type === 'intrusion').length;
+      const suspiciousCount = events.filter(e => e.event_type === 'suspicious_behaviour').length;
 
       setStats({
         fire: fireCount,
         violence: violenceCount,
-        intrusion: intrusionCount,
+        suspicious: suspiciousCount,
         total: events.length
       });
 
@@ -75,10 +75,10 @@ const Dashboard = () => {
             });
           }
           
-          // Show toast for new violence events
-          if (event.event_type === 'violence') {
+          // Show toast for security events (violence or suspicious behaviour)
+          if (event.event_type === 'violence' || event.event_type === 'suspicious_behaviour') {
             toast({
-              title: "⚠️ Violence Detected!",
+              title: "⚠️ Security Alert!",
               description: "Notifying Security Team...",
               className: "bg-yellow-500 text-yellow-950 border-yellow-600",
               duration: 8000,
@@ -164,12 +164,12 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Intrusions</CardTitle>
-              <ShieldAlert className="w-5 h-5 text-purple-500" />
+              <CardTitle className="text-sm font-medium">Suspicious Behavior</CardTitle>
+              <Eye className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.intrusion}</div>
-              <p className="text-xs text-muted-foreground">Security breaches</p>
+              <div className="text-2xl font-bold">{stats.suspicious}</div>
+              <p className="text-xs text-muted-foreground">Suspicious activities</p>
             </CardContent>
           </Card>
         </div>
