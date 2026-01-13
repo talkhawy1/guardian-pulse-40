@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Flame, Users, Eye } from "lucide-react";
+import { AlertTriangle, Flame, Users, Eye, Image as ImageIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Alert {
@@ -10,6 +10,7 @@ interface Alert {
   camera_id?: string;
   confidence: number;
   severity_level: 'low' | 'medium' | 'high' | 'critical';
+  snapshot_url?: string;
   cameras?: {
     name: string;
     location: string;
@@ -75,6 +76,25 @@ const AlertCard = ({ alert }: AlertCardProps) => {
               <span className="font-medium">Confidence: {(alert.confidence * 100).toFixed(0)}%</span>
             </div>
           </div>
+          {/* Snapshot thumbnail */}
+          {alert.snapshot_url ? (
+            <a 
+              href={alert.snapshot_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex-shrink-0 w-16 h-12 rounded overflow-hidden hover:ring-2 hover:ring-primary transition-all"
+            >
+              <img 
+                src={alert.snapshot_url} 
+                alt="Event snapshot" 
+                className="w-full h-full object-cover"
+              />
+            </a>
+          ) : (
+            <div className="flex-shrink-0 w-16 h-12 bg-secondary/20 rounded flex items-center justify-center">
+              <ImageIcon className="w-4 h-4 text-muted-foreground" />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
