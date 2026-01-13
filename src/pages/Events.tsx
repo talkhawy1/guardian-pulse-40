@@ -16,6 +16,7 @@ interface LocalEvent {
   severity_level?: string;
   camera_name?: string;
   camera_location?: string;
+  snapshot_url?: string;
 }
 
 const Events = () => {
@@ -182,10 +183,25 @@ const Events = () => {
                       </div>
                     </div>
 
-                    {/* Snapshot Placeholder */}
-                    <div className="flex-shrink-0 w-32 h-24 bg-secondary/20 rounded-lg flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                    </div>
+                    {/* Snapshot */}
+                    {event.snapshot_url ? (
+                      <a 
+                        href={event.snapshot_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 w-32 h-24 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+                      >
+                        <img 
+                          src={event.snapshot_url} 
+                          alt="Event snapshot" 
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div className="flex-shrink-0 w-32 h-24 bg-secondary/20 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
