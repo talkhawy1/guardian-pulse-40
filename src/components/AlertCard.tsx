@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Flame, Users, Eye, Image as ImageIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertTriangle, Flame, Users, Eye, Image as ImageIcon, Play } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Alert {
@@ -11,6 +13,7 @@ interface Alert {
   confidence: number;
   severity_level: 'low' | 'medium' | 'high' | 'critical';
   snapshot_url?: string;
+  video_url?: string;
   cameras?: {
     name: string;
     location: string;
@@ -22,6 +25,8 @@ interface AlertCardProps {
 }
 
 const AlertCard = ({ alert }: AlertCardProps) => {
+  const [showVideo, setShowVideo] = useState(false);
+
   const eventIcons: Record<string, typeof Flame> = {
     fire: Flame,
     violence: Users,
@@ -76,20 +81,29 @@ const AlertCard = ({ alert }: AlertCardProps) => {
               <span className="font-medium">Confidence: {(alert.confidence * 100).toFixed(0)}%</span>
             </div>
           </div>
-          {/* Snapshot thumbnail */}
+          {/* Snapshot thumbnail with Video Overlay */}
           {alert.snapshot_url ? (
-            <a 
-              href={alert.snapshot_url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex-shrink-0 w-16 h-12 rounded overflow-hidden hover:ring-2 hover:ring-primary transition-all"
+            <div 
+              className="relative flex-shrink-0 w-16 h-12 rounded overflow-hidden hover:ring-2 hover:ring-primary transition-all cursor-pointer group"
+              onClick={() => {
+                if (alert.video_url) {
+                  setShowVideo(true);
+                } else {
+                  window.open(alert.snapshot_url, '_blank');
+                }
+              }}
             >
               <img 
                 src={alert.snapshot_url} 
                 alt="Event snapshot" 
                 className="w-full h-full object-cover"
               />
-            </a>
+              {alert.video_url && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                  <Play className="w-4 h-4 text-white fill-white" />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex-shrink-0 w-16 h-12 bg-secondary/20 rounded flex items-center justify-center">
               <ImageIcon className="w-4 h-4 text-muted-foreground" />
@@ -97,6 +111,27 @@ const AlertCard = ({ alert }: AlertCardProps) => {
           )}
         </div>
       </CardContent>
+
+      {/* Video Modal */}
+      <Dialog open={showVideo} onOpenChange={setShowVideo}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle>{displayLabel} - {alert.cameras?.name || 'Camera'}</DialogTitle>
+          </DialogHeader>
+          <div className="p-4">
+            {alert.video_url && (
+              <video 
+                controls 
+                autoPlay 
+                className="w-full rounded-lg"
+                src={alert.video_url}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Navigation from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Flame, Users, Eye, AlertTriangle, Image as ImageIcon } from "lucide-react";
+import { Flame, Users, Eye, AlertTriangle, Image as ImageIcon, Play, X } from "lucide-react";
 
 const LOCAL_BACKEND_URL = "http://localhost:8000";
 
@@ -17,6 +18,7 @@ interface LocalEvent {
   camera_name?: string;
   camera_location?: string;
   snapshot_url?: string;
+  video_url?: string;
 }
 
 const Events = () => {
@@ -25,6 +27,7 @@ const Events = () => {
     event_type: 'all',
     severity_level: 'all'
   });
+  const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
 
   const fetchEvents = async () => {
     try {
@@ -183,20 +186,31 @@ const Events = () => {
                       </div>
                     </div>
 
-                    {/* Snapshot */}
+                    {/* Snapshot with Video Overlay */}
                     {event.snapshot_url ? (
-                      <a 
-                        href={event.snapshot_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 w-32 h-24 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+                      <div 
+                        className="relative flex-shrink-0 w-32 h-24 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all cursor-pointer group"
+                        onClick={() => {
+                          if (event.video_url) {
+                            setSelectedVideo({ url: event.video_url, title: `${getDisplayLabel(event.event_type)} - ${event.camera_name || 'Camera'}` });
+                          } else {
+                            window.open(event.snapshot_url, '_blank');
+                          }
+                        }}
                       >
                         <img 
                           src={event.snapshot_url} 
                           alt="Event snapshot" 
                           className="w-full h-full object-cover"
                         />
-                      </a>
+                        {event.video_url && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                              <Play className="w-5 h-5 text-primary fill-primary ml-0.5" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="flex-shrink-0 w-32 h-24 bg-secondary/20 rounded-lg flex items-center justify-center">
                         <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -214,6 +228,27 @@ const Events = () => {
             </Card>
           )}
         </div>
+
+        {/* Video Modal */}
+        <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
+          <DialogContent className="max-w-4xl p-0 overflow-hidden">
+            <DialogHeader className="p-4 pb-0">
+              <DialogTitle>{selectedVideo?.title}</DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+              {selectedVideo && (
+                <video 
+                  controls 
+                  autoPlay 
+                  className="w-full rounded-lg"
+                  src={selectedVideo.url}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
