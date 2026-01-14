@@ -29,6 +29,20 @@ const Events = () => {
   });
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
 
+  // Map event type to severity level
+  const getSeverityFromEventType = (eventType: string): string => {
+    switch (eventType) {
+      case 'fire':
+        return 'critical';
+      case 'violence':
+        return 'high';
+      case 'suspicious_behaviour':
+        return 'medium';
+      default:
+        return 'low';
+    }
+  };
+
   const fetchEvents = async () => {
     try {
       const response = await fetch(`${LOCAL_BACKEND_URL}/api/events`);
@@ -36,14 +50,22 @@ const Events = () => {
       
       const data: LocalEvent[] = await response.json();
       
+      // Map severity based on event type
+      const mappedData = data.map(e => ({
+        ...e,
+        severity_level: getSeverityFromEventType(e.event_type)
+      }));
+      
       // Apply filters client-side
-      let filteredData = data;
+      let filteredData = mappedData;
       
       if (filters.event_type !== 'all') {
         filteredData = filteredData.filter(e => e.event_type === filters.event_type);
       }
       if (filters.severity_level !== 'all') {
-        filteredData = filteredData.filter(e => e.severity_level === filters.severity_level);
+        filteredData = filteredData.filter(e => 
+          e.severity_level?.toLowerCase() === filters.severity_level.toLowerCase()
+        );
       }
       
       // Sort by timestamp descending

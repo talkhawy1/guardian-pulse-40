@@ -150,12 +150,12 @@ const SetupGuide = () => {
             <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
               <div>
                 <p className="font-medium">Frontend (React)</p>
-                <code className="text-sm text-muted-foreground">http://localhost:5173</code>
+                <code className="text-sm text-muted-foreground">http://localhost:8080</code>
               </div>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard("http://localhost:5173", "URL")}
+                onClick={() => copyToClipboard("http://localhost:8080", "URL")}
               >
                 <Copy className="w-4 h-4" />
               </Button>
