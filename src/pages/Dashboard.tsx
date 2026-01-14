@@ -92,12 +92,26 @@ const Dashboard = () => {
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       ).slice(0, 5);
       
+      // Map event type to severity level
+      const getSeverity = (eventType: string): 'critical' | 'high' | 'medium' | 'low' => {
+        switch (eventType) {
+          case 'fire':
+            return 'critical';
+          case 'violence':
+            return 'high';
+          case 'suspicious_behaviour':
+            return 'medium';
+          default:
+            return 'low';
+        }
+      };
+
       setRecentAlerts(sortedEvents.map(e => ({
         id: e.id,
         event_type: e.event_type,
         timestamp: e.timestamp,
         confidence: e.confidence || 0.95,
-        severity_level: e.event_type === 'fire' ? 'critical' : 'high',
+        severity_level: getSeverity(e.event_type),
         cameras: { name: 'Local Camera', location: 'Main Entrance' }
       })));
 
