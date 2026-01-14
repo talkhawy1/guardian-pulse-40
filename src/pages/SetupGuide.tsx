@@ -163,12 +163,12 @@ const SetupGuide = () => {
             <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
               <div>
                 <p className="font-medium">Video Feed (Direct)</p>
-                <code className="text-sm text-muted-foreground">http://localhost:8000/video_feed</code>
+                <code className="text-sm text-muted-foreground">http://localhost:8080/video_feed</code>
               </div>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard("http://localhost:8000/video_feed", "URL")}
+                onClick={() => copyToClipboard("http://localhost:8080/video_feed", "URL")}
               >
                 <Copy className="w-4 h-4" />
               </Button>
@@ -176,12 +176,12 @@ const SetupGuide = () => {
             <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
               <div>
                 <p className="font-medium">Server Health Check</p>
-                <code className="text-sm text-muted-foreground">http://localhost:8000/health</code>
+                <code className="text-sm text-muted-foreground">http://localhost:8080/health</code>
               </div>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard("http://localhost:8000/health", "URL")}
+                onClick={() => copyToClipboard("http://localhost:8080/health", "URL")}
               >
                 <Copy className="w-4 h-4" />
               </Button>
