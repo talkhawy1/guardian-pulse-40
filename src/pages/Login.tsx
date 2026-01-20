@@ -28,14 +28,14 @@ const Login = () => {
 
     if (success) {
       toast({
-        title: "تم تسجيل الدخول بنجاح",
-        description: "مرحباً بك في نظام المراقبة",
+        title: "Login Successful",
+        description: "Welcome to Safe Eye",
       });
       navigate("/");
     } else {
       toast({
-        title: "خطأ في تسجيل الدخول",
-        description: "اسم المستخدم أو كلمة المرور غير صحيحة",
+        title: "Login Failed",
+        description: "Invalid username or password",
         variant: "destructive",
       });
     }
@@ -52,34 +52,34 @@ const Login = () => {
               <Shield className="w-10 h-10 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">نظام المراقبة الأمني</CardTitle>
+          <CardTitle className="text-2xl">Safe Eye</CardTitle>
           <CardDescription>
-            أدخل بيانات الدخول للوصول إلى لوحة التحكم
+            Enter your credentials to access the dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">اسم المستخدم</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="أدخل اسم المستخدم"
+                placeholder="Enter username"
                 required
                 autoComplete="username"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور"
+                  placeholder="Enter password"
                   required
                   autoComplete="current-password"
                   className="pr-10"
@@ -100,7 +100,7 @@ const Login = () => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>
